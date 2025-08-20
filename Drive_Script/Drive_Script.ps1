@@ -16,8 +16,11 @@ Outputs: data to a file labeled Drive_Info.txt.
 
 # Define Output Dir: Export results to a text file labeled Drive_Info.txt in a child directory labeled Output.
 $outputFilePath = Join-Path -Path $PSScriptRoot -ChildPath ".\Output\Drive_Info.txt"
-# TODO: Create .json file to export as well to maintain verbose serialized raw information. 
-$outputCSV = Join-Path -Path $PSScriptRoot -ChildPath ".\Output\Drive_Info.csv"
+# Export Raw output to .csv files.
+$outputDiskCSV = Join-Path -Path $PSScriptRoot -ChildPath ".\Output\Disk_Info.csv"
+$outputVolumeCSV = Join-Path -Path $PSScriptRoot -ChildPath ".\Output\Volume_Info.csv"
+$outputShareCSV = Join-Path -Path $PSScriptRoot -ChildPath ".\Output\Share_Info.csv"
+
 
 # Gather information about all drives attached to this computer and mounted.
 # Create variables to contain drive Data for physical disk[drive Info], mounted drives [volInfo], networked shares [netShareInfo] 
@@ -31,11 +34,15 @@ $netShareInfo = Get-SmbShare | Select-Object *
 # Write variables to output file labeled Drive_Info.txt
 "----- Physical Disk Info -----" | Out-File -FilePath $outputFilePath -Append
 $driveInfo | Format-Table -AutoSize | Out-File -FilePath $outputFilePath -Append
-$driveInfo | Export-Csv -Path $outputCSV
+$driveInfo | Select-Object DiskNumber, BusType, FriendlyName, UniqueID, Model, SerialNumber, Size | Export-Csv -Path $outputDiskCSV
+
 "----- Volume Info -----" | Out-File -FilePath $outputFilePath -Append
 $volInfo | Out-File -FilePath $outputFilePath -Append
+$volInfo | Export-Csv -Path $outputVolumeCSV
+
 "----- Network Shares -----" | Out-File -FilePath $outputFilePath -Append
 $netShareInfo | Out-File -FilePath $outputFilePath -Append
+$netShareInfo | Export-Csv -Path $outputShareCSV
 
 # Wait for input to close the console window
 Read-Host -Prompt "[+] The script has finished executing files located in $outputFilePath . Press Enter to Exit"
